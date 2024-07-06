@@ -1,0 +1,31 @@
+{
+  "name": "chat-lemur",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev ./server/index.ts"
+  },
+  "keywords": [
+    "system-lemur",
+    "socket-lemur",
+    "monomongo-lemur",
+    "socket-client",
+    "socket-server"
+  ],
+  "author": "ElkinCp5",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^8.4.4",
+    "monomongo-lemur": "^0.0.1",
+    "socket-lemur": "^1.1.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.2",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.4.5"
+  }
+}
