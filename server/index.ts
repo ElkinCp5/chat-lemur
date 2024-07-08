@@ -3,7 +3,7 @@ import { SocketServer } from "socket-lemur";
 import { Modules } from "./modules";
 import { Session } from "./modules/types";
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 4040;
 const Server = new SocketServer<Session>({
   apikey: 'api-key',
   secret: 'jwt-secret',

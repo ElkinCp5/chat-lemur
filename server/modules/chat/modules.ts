@@ -1,5 +1,5 @@
 import { SocketServer } from "socket-lemur";
-import { ChatModel, UserModel } from './models';
+import { ChatModel, UserModel } from './infrastructure/models';
 import { UserController } from "./infrastructure";
 import { ChatRouter, UserRouter } from "./infrastructure/routers";
 import { ChatController } from "./infrastructure/controllers";

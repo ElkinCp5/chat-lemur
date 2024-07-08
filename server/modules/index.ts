@@ -1,6 +1,6 @@
 import { SocketServer } from "socket-lemur";
 import { ChatModule, UserModule } from "./chat/modules";
-import { ChatModel, UserModel } from "./chat/models";
+import { ChatModel, UserModel } from "./chat/infrastructure/models";
 import { Session } from "./types";
 
 
