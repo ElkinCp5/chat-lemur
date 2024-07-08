@@ -1,6 +1,6 @@
-import { SocketClient } from "socket-lemur/dist/browser";
+import { SocketClient } from "socket-lemur";
 
-const PORT = 3030;
+const PORT = 4040;
 const url = `http://localhost:${PORT}`;
 
 export const socketClient = () => new SocketClient(url, {

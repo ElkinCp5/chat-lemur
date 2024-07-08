@@ -24,7 +24,7 @@ interface Data<M, C> {
 interface ContextContainer<M, C> {
   data: Data<M, C>;
   loading: boolean;
-  client: SocketClient | undefined;
+  client: SocketClient;
   getChats: () => void;
   getMessages: () => void;
   sendMessage: (message: string) => void;
@@ -36,7 +36,6 @@ const Context = React.createContext<ContextContainer<Message, Chat>>({
     chats: [],
   },
   loading: false,
-  client: undefined,
   getChats: function (): void {
     throw new Error("Function not implemented.");
   },
@@ -46,6 +45,7 @@ const Context = React.createContext<ContextContainer<Message, Chat>>({
   sendMessage: function (_message: string): void {
     throw new Error("Function not implemented.");
   },
+  client: {} as any,
 });
 
 interface Props {
@@ -53,7 +53,7 @@ interface Props {
 }
 
 export const Provider: React.FC<Props> = React.memo(({ children }) => {
-  const [client, setClient] = React.useState<SocketClient>();
+  const [client, setClient] = React.useState<SocketClient>(socketClient());
   const [loading, _setLoading] = React.useState<boolean>(false);
   const [state, _setState] = React.useState<{ data: Data<Message, Chat> }>({
     data: {
@@ -68,15 +68,14 @@ export const Provider: React.FC<Props> = React.memo(({ children }) => {
 
   React.useEffect(() => {
     if (client) return;
-    socketClient();
-    // setClient(socketClient);
+    setClient(socketClient());
   }, []);
 
   React.useEffect(() => {
-    // if (!client) return;
-    // if (client.connected()) return;
-    // client.connect();
-    // console.log({ status: client.connected() });
+    if (!client) return;
+    if (client.connected()) return;
+    client.connect();
+    console.log({ status: client });
   }, [client]);
 
   return (
@@ -99,6 +98,7 @@ export const Provider: React.FC<Props> = React.memo(({ children }) => {
 
 const getContext = () => React.useContext(Context);
 export const useStorage = () => getContext().data;
+export const useSocket = () => getContext().client;
 export const useChats = () => getContext().getChats;
 export const useMessages = () => getContext().getMessages;
 export const useSendMessage = () => getContext().sendMessage;
