@@ -24,7 +24,7 @@ export class UserController<S extends Session> extends TokenManager {
                     username: data.body.username
                 });
                 if (!user) throw "El telefono o username es invlido";
-                const authentication = this.generate({ id: user.id }, 'jwt-secret', '6h');
+                const authentication = this.generate({ uuid: user.uuid }, 'jwt-secret', '6h');
                 response({ user, authentication })
 
             } catch (err: any) {
@@ -57,11 +57,11 @@ export class UserController<S extends Session> extends TokenManager {
                 });
 
                 await this.chat.create({
-                    name: user.name,
+                    name: user.username,
                     messages: []
                 });
 
-                const authentication = this.generate({ id: user.id }, 'jwt-secret', '6h');
+                const authentication = this.generate({ uuid: user.uuid }, 'jwt-secret', '6h');
                 response({ user, authentication })
             } catch (err) {
                 error(err);
@@ -81,71 +81,101 @@ export class ChatController<S extends Session> {
         private readonly chat: typeof ChatModel,
         private readonly user: typeof UserModel,
     ) {
-        this.send = this.send.bind(this);
+        this.channel = this.channel.bind(this);
         this.messages = this.messages.bind(this);
+        this.chats = this.chats.bind(this);
+        this.send = this.send.bind(this);
     }
 
     send(method: string) {
-        this.socke.channel<any>(`${method}/${this.path}/send`, async (data, response) => {
-            if (!data?.session) throw "Acceso no autorizado";
-            const user = await this.user.findById(data?.session.id);
-            if (!user) throw "Acceso no autorizado";
+        this.socke.channel<any>(this.channel(method, "send"), async (data, response, error) => {
+            try {
+                if (!data.body.message) throw "El texto del mensaje es requerido!.";
+                if (!data?.session) throw "Acceso no autorizado";
+                const user = await this.user.findOne({ uuid: data?.session.uuid });
+                if (!user) throw "Acceso no autorizado";
 
-            const message = {
-                message: data.body.message,
-                userId: user.id
-            } as Message;
+                const message = {
+                    message: data.body.message,
+                    userId: user.uuid
+                } as Message;
 
-            await this.chat.findByIdAndUpdate(
-                data.params.chat,
-                { $push: { messages: message } },
-                { new: true }
-            );
+                const chat = await this.chat.findOne({ uuid: data.params.uuid });
+                if (!chat) throw "El recurso no existe";
 
-            (message as any).user = {
-                name: user.name
+
+
+                chat.messages.push(message);
+                await chat.save();
+
+                (message as any).user = {
+                    name: user.name
+                }
+
+                response(message);
+            } catch (err: any) {
+                error(err);
             }
-
-            response(message);
-        }
-        );
+        }, true, true);
     }
 
-    async messages(method: string) {
-        this.socke.channel<any>(`${this.path}/${method}/messages`, async (data, response) => {
-            if (!data?.session) throw "Acceso no autorizado";
-            const [chat] = await this.chat.aggregate<Chat>([
-                { $match: { id: data.params.chat } },
-                { $unwind: "$messages" },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "messages.userId",
-                        foreignField: "id",
-                        as: "user"
-                    }
-                },
-                { $set: { "messages.user": { $arrayElemAt: ["$user", 0] } } },
-                {
-                    $unset: [
-                        "messages.user.phone",
-                        "messages.user.username",
-                        "messages.user.createdAt",
-                        "messages.user.updatedAt",
-                    ]
-                },
-                {
-                    $group: {
-                        _id: "$_id",
-                        messages: { $push: "$messages" }
-                    }
-                }
-            ])
+    messages(method: string) {
+        this.socke.channel<any>(this.channel(method, "messages"), async (data, response, error) => {
+            try {
+                if (!data?.session) throw "Acceso no autorizado";
 
-            // findById(data.params.chat);
-            response(chat ? chat.messages : [])
-        }
-        );
+                const chat = await this.chat.findOne<Chat>({ uuid: data.params.uuid })
+                // const [chat] = await this.chat.aggregate<Chat>([
+                //     { $match: { uuid: data.params.uuid } },
+                //     { $unwind: "$messages" },
+                //     {
+                //         $lookup: {
+                //             from: "users",
+                //             localField: "messages.userId",
+                //             foreignField: "uuid",
+                //             as: "user"
+                //         }
+                //     },
+                //     { $set: { "messages.user": { $arrayElemAt: ["$user", 0] } } },
+                //     {
+                //         $unset: [
+                //             "messages.user.phone",
+                //             "messages.user.username",
+                //             "messages.user.createdAt",
+                //             "messages.user.updatedAt",
+                //         ]
+                //     },
+                //     {
+                //         $group: {
+                //             _id: "$_id",
+                //             messages: { $push: "$messages" }
+                //         }
+                //     }
+                // ])
+
+                console.log({ uuid: chat?.uuid, q_uuid: data.params.uuid });
+
+                // findById(data.params.chat);
+                response(chat ? chat.messages : [])
+            } catch (err: any) {
+                error(err);
+            }
+        }, true);
+    }
+
+    chats(method: string) {
+        this.socke.channel<any>(this.channel(method, "all"), async (_, response, error) => {
+            try {
+                const chats = await this.chat.find();
+                response(chats || []);
+            } catch (err: any) {
+                error(err);
+            }
+        }, true);
+    }
+
+    private channel(method: string, name: string) {
+        return `${method}/${this.path}/${name}`
     }
 
 }

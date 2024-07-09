@@ -1,7 +1,8 @@
 import React from "react";
-import Cookies from "js-cookie";
 import { Form } from "../components";
 import { useSocket } from "../components/provider";
+import { openSession, SegureRoute } from "../utils";
+import { Link } from "react-router-dom";
 
 interface ISignup {
   name: string;
@@ -10,6 +11,7 @@ interface ISignup {
 }
 
 export const Signup = () => {
+  SegureRoute();
   const socket = useSocket();
   const [form, setForm] = React.useState<ISignup>({
     name: "",
@@ -18,11 +20,7 @@ export const Signup = () => {
   });
 
   const signup = socket.channel("post/users/signup", {
-    onSuccess: ({ user, authentication }: any) => {
-      Cookies.set("token", authentication, { expires: 1, sameSite: "strict" });
-      Cookies.set("name", user.name, { expires: 1, sameSite: "strict" });
-      location.reload();
-    },
+    onSuccess: openSession,
     onError: console.error,
   });
 
@@ -40,29 +38,52 @@ export const Signup = () => {
   }, [socket]);
 
   return (
-    <div className="register">
-      <h2>Register</h2>
-      <Form
-        onSubmit={(data) => {
-          if (!signup) return;
-          console.log({ data });
-          signup.emit({ data });
-        }}
-      >
-        <div>
-          <label>Name</label>
-          <input name={"name"} value={form.name} onChange={onChange} />
+    <div className="container">
+      <div className="row d-flex justify-content-center">
+        <div className="col-12 col-md-6">
+          <Form
+            onSubmit={(data) => {
+              if (!signup) return;
+              console.log({ data });
+              signup.emit({ data });
+            }}
+          >
+            <div className="form-group mb-2">
+              <label>Name</label>
+              <input
+                name={"name"}
+                className="form-control"
+                value={form.name}
+                onChange={onChange}
+              />
+            </div>
+            <div className="form-group mb-2">
+              <label>Username</label>
+              <input
+                name={"username"}
+                className="form-control"
+                value={form.username}
+                onChange={onChange}
+              />
+            </div>
+            <div className="form-group mb-2">
+              <label>Phone</label>
+              <input
+                name={"phone"}
+                className="form-control"
+                value={form.phone}
+                onChange={onChange}
+              />
+            </div>
+            <button type="submit" className="mt-3">
+              Register
+            </button>
+            <Link type="submit" to={"/"} className="mt-3 mx-3">
+              Signin
+            </Link>
+          </Form>
         </div>
-        <div>
-          <label>Username</label>
-          <input name={"username"} value={form.username} onChange={onChange} />
-        </div>
-        <div>
-          <label>Phone</label>
-          <input name={"phone"} value={form.phone} onChange={onChange} />
-        </div>
-        <button type="submit">Register</button>
-      </Form>
+      </div>
     </div>
   );
 };

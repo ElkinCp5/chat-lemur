@@ -1,7 +1,8 @@
 import React from "react";
-import Cookies from "js-cookie";
+import { Link } from "react-router-dom";
 import { Form } from "../components";
 import { useSocket } from "../components/provider";
+import { openSession, SegureRoute } from "../utils";
 
 interface ISignin {
   username: string;
@@ -9,6 +10,7 @@ interface ISignin {
 }
 
 export const Signin = () => {
+  SegureRoute();
   const socket = useSocket();
   const [form, setForm] = React.useState<ISignin>({
     username: "",
@@ -16,11 +18,7 @@ export const Signin = () => {
   });
 
   const signin = socket.channel("post/users/signin", {
-    onSuccess: ({ user, authentication }: any) => {
-      Cookies.set("token", authentication, { expires: 1, sameSite: "strict" });
-      Cookies.set("name", user.name, { expires: 1, sameSite: "strict" });
-      location.reload();
-    },
+    onSuccess: openSession,
     onError: console.error,
   });
 
@@ -49,7 +47,7 @@ export const Signin = () => {
               signin.emit({ data });
             }}
           >
-            <div className="form-group">
+            <div className="form-group mb-2">
               <label>Username</label>
               <input
                 name="username"
@@ -58,7 +56,7 @@ export const Signin = () => {
                 value={form.username}
               />
             </div>
-            <div className="form-group">
+            <div className="form-group mb-2">
               <label>Phone</label>
               <input
                 name={"phone"}
@@ -72,9 +70,13 @@ export const Signin = () => {
               disabled={
                 !Object.values(form).every((val) => val) && socket != undefined
               }
+              className="mt-3"
             >
               Login
             </button>
+            <Link type="submit" to={"/signup"} className="mt-3 mx-3">
+              Signup
+            </Link>
           </Form>
         </div>
       </div>

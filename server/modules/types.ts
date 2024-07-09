@@ -1,1 +1,1 @@
-export type Session = { id: string };
+export type Session = { uuid: string };

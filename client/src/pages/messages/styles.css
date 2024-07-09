@@ -1,0 +1,18 @@
+.message {
+  position: relative;
+  border-radius: 0rem 0.5rem 0.5rem;
+  background-color: rgba(var(--bs-success-rgb), 0.8) !important;
+  /* padding-right: 3.2rem !important; */
+}
+.message.my {
+  border-radius: 0.5rem 0.5rem 0;
+  background-color: rgba(var(--bs-black-rgb), 0.8) !important;
+}
+
+.message small {
+  display: inline-block;
+  position: absolute;
+  bottom: 0.2rem;
+  right: 0.5rem;
+  color: rgba(var(--bs-white-rgb), 0.4) !important;
+}

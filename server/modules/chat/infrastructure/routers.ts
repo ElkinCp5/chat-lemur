@@ -16,5 +16,6 @@ export class ChatRouter<S extends Session> {
     ) {
         this.ctrl.send("post");
         this.ctrl.messages("get");
+        this.ctrl.chats("get");
     }
 }

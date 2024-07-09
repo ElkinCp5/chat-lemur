@@ -3,9 +3,10 @@ import React from "react";
 interface Props<T> {
   onSubmit: (data: T) => void;
   children: any;
+  className?: string;
 }
 
-export function Form<T>({ onSubmit, children }: Props<T>) {
+export function Form<T>({ onSubmit, children, className }: Props<T>) {
   const ref = React.createRef<HTMLFormElement>();
 
   const handleSubmit = (evt: SubmitEvent) => {
@@ -26,5 +27,9 @@ export function Form<T>({ onSubmit, children }: Props<T>) {
     };
   }, []);
 
-  return <form ref={ref}>{children}</form>;
+  return (
+    <form className={className} ref={ref}>
+      {children}
+    </form>
+  );
 }

@@ -1,27 +1,31 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Provider } from "../components/provider";
-import Chat from "./chat";
 import { Signin } from "./signin";
 import { Signup } from "./signup";
+import { Chat } from "./chat";
+import { Messages } from "./messages";
 
-export const Routes = () => {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <Signin />,
-    },
-    {
-      path: "signup",
-      element: <Signup />,
-    },
-    {
-      path: "chat",
-      element: <Chat />,
-    },
-  ]);
+const Welcome = () => {
+  return (
+    <div>
+      <h1>Inicio</h1>
+    </div>
+  );
+};
+
+export const Routers = () => {
   return (
     <Provider>
-      <RouterProvider router={router} />
+      <BrowserRouter>
+        <Routes>
+          <Route path={"/"} element={<Signin />} />
+          <Route path={"/signup"} element={<Signup />} />
+          <Route path={"/chat"} element={<Chat />}>
+            <Route index={true} element={<Welcome />} />
+            <Route path={":id"} element={<Messages />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </Provider>
   );
 };
